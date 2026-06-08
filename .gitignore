@@ -1,6 +1,6 @@
 .vscode/
 .idea/
 data/
-src/__pycache__/
+**/__pycache__/
 .ruff_cache/
 .venv/
