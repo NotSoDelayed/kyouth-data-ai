@@ -32,6 +32,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
     if not (input_dir.exists() or input_dir.is_dir()):
         print(f"Source directory '{input_dir.name}' not found.")
         sys.exit(1)
+
     count_total = 0
     count_fail = 0
     count_success = 0
@@ -44,6 +45,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
             count_fail += 1
             logging.error(f"Failed to process: {file_path} | Reason: {err}")
             continue
+
         if raw.is_multipart():
             html = None
             for part in raw.walk():
@@ -62,6 +64,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
                 count_success += 1
             else:
                 count_fail += 1
+
     if count_total == 0:
         print("No source was extracted.")
         sys.exit(0)
