@@ -14,7 +14,7 @@ def extract_html(file_path: Path, part: EmailMessage, suppress_err: bool = False
         logging.info(f"✅ Extracted: {file_name}")
         return content_html
     if not suppress_err:
-        logging.error(f"⚠️ No HTML content found in: {file_name}")
+        logging.warning(f"⚠️ No HTML content found in: {file_name}")
     return None
 
 def export_html(html: str, file_name: str, output_dir: Path):
@@ -56,7 +56,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
                     break
             if html is None:
                 count_fail += 1
-                logging.error(f"⚠️ No HTML content found in: {file_path.stem}")
+                logging.warning(f"⚠️ No HTML content found in: {file_path.stem}")
         else:
             html = extract_html(file_path, raw)
             if html is not None:
@@ -68,5 +68,5 @@ def ingest_all_mhtml(input_path: str, output_path: str):
     if count_total == 0:
         print("No source was extracted.")
         sys.exit(1)
-    print("📊 Bronze Summary:")
+    print("\n📊 Bronze Summary:")
     print(f"Total: {count_total} | Extracted: {count_success} | Failed: {count_fail}")
