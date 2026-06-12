@@ -23,14 +23,14 @@ def export_html(html: str, file_name: str, output_dir: Path):
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file.write_text(html, encoding="utf-8")
     except OSError as err:
-        logging.error(f"⚠️ Unable to export to {file_name}: {err}")
+        logging.error(f"⚠️ Unable to export to {output_file.name} | Reason: {err}")
 
 def ingest_all_mhtml(input_path: str, output_path: str):
     print("🥉 Bronze: Ingesting HTML to MHTML")
     input_dir = Path(input_path)
     output_dir = Path(output_path)
     if not (input_dir.exists() or input_dir.is_dir()):
-        print(f"Source directory '{input_dir.name}' not found.")
+        print(f"Input directory '{input_dir.name}' not found.")
         sys.exit(1)
 
     count_total = 0
