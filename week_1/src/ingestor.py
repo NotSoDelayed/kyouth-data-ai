@@ -1,4 +1,5 @@
 import logging
+import sys
 from email import policy
 from email.message import EmailMessage
 from email.parser import BytesParser
@@ -25,21 +26,44 @@ def export_html(html: str, file_name: str, output_dir: Path):
         logging.error(f"⚠️ Unable to export to {file_name}: {err}")
 
 def ingest_all_mhtml(input_path: str, output_path: str):
+    print("🥉 Bronze: Ingesting HTML to MHTML")
     input_dir = Path(input_path)
     output_dir = Path(output_path)
+    if not (input_dir.exists() or input_dir.is_dir()):
+        print(f"Source directory '{input_dir.name}' not found.")
+        sys.exit(1)
+    count_total = 0
+    count_fail = 0
+    count_success = 0
     for file_path in input_dir.glob("*.mhtml"):
+        count_total += 1
         try:
             with open(file_path, "rb") as file:
                 raw = cast(EmailMessage, BytesParser(policy=policy.default).parse(file))
         except ValueError as err:
+            count_fail += 1
             logging.error(f"Failed to process: {file_path} | Reason: {err}")
             continue
         if raw.is_multipart():
+            html = None
             for part in raw.walk():
                 html = extract_html(file_path, part, True)
                 if html is not None:
                     export_html(html, f"{file_path.stem}.html", output_dir)
+                    count_success += 1
                     break
+            if html is None:
+                count_fail += 1
+                logging.error(f"⚠️ No HTML content found in: {file_path.stem}")
         else:
-            if not extract_html(file_path, raw):
-                continue
+            html = extract_html(file_path, raw)
+            if html is not None:
+                export_html(html, f"{file_path.stem}.html", output_dir)
+                count_success += 1
+            else:
+                count_fail += 1
+    if count_total == 0:
+        print("No source was extracted.")
+        sys.exit(0)
+    print("📊 Bronze Summary:")
+    print(f"Total: {count_total} | Extracted: {count_success} | Failed: {count_fail}")
