@@ -67,6 +67,6 @@ def ingest_all_mhtml(input_path: str, output_path: str):
 
     if count_total == 0:
         print("No source was extracted.")
-        sys.exit(0)
+        sys.exit(1)
     print("📊 Bronze Summary:")
     print(f"Total: {count_total} | Extracted: {count_success} | Failed: {count_fail}")
