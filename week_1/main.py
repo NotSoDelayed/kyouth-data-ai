@@ -26,14 +26,26 @@ COMMANDS = {
     "process": run_silver
 }
 
+def print_usage():
+    print("Usage: uv run main.py [optional: task]")
+    print("")
+    print("task:")
+    print("> help -- show this help page")
+    print("> ingest -- ingest MHTML to HTML")
+    print("> process -- process ETL on HTML to JSON")
+
 def main():
     if len(sys.argv) > 1:
         arg = sys.argv[1]
         if arg not in COMMANDS:
-            print(f"Unknown argument: {arg}")
-            return
+            exit_code = 0
+            if arg != "help":
+                exit_code = 1
+                print(f"Unknown argument: {arg}")
+            print_usage()
+            sys.exit(exit_code)
         COMMANDS[arg]()
-        return
+        sys.exit(0)
     run_bronze()
     print("")
     run_silver()
