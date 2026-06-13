@@ -10,7 +10,9 @@ from pathlib import Path
 def extract_html(file_path: Path, part: EmailMessage, suppress_err: bool = False) -> str | None:
     file_name = file_path.name
     if part.get_content_type() == "text/html":
-        content_html = part.get_content()
+        payload = part.get_payload(decode=True)
+        charset = part.get_content_charset() or "utf-8"
+        content_html = payload.decode(charset, errors="replace")
         logging.info(f"✅ Extracted: {file_name}")
         return content_html
     if not suppress_err:
