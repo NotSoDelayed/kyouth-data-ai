@@ -2,6 +2,7 @@ import logging
 import sys
 from src.ingestor import ingest_all_mhtml
 from src.processor import process_all_html
+from src.loader import load_all_jsons
 
 
 logging.basicConfig(
@@ -16,36 +17,21 @@ def run_silver():
     process_all_html("data/1_silver", "data/2_bronze")
 
 def run_gold():
-    pass
+    load_all_jsons("data/2_bronze", "data/3_gold/jobs.db")
 
 def run_profiler():
     pass
-
-COMMANDS = {
-    "ingest": run_bronze,
-    "process": run_silver
-}
 
 def print_usage():
     print("Usage: uv run main.py [optional: task]")
     print("")
     print("task:")
     print("> help -- show this help page")
+    print("> all -- executes the whole pipeline")
     print("> ingest -- ingest MHTML to HTML")
     print("> process -- process ETL on HTML to JSON")
 
-def main():
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-        if arg not in COMMANDS:
-            exit_code = 0
-            if arg != "help":
-                exit_code = 1
-                print(f"Unknown argument: {arg}")
-            print_usage()
-            sys.exit(exit_code)
-        COMMANDS[arg]()
-        sys.exit(0)
+def run_pipeline():
     run_bronze()
     print("")
     run_silver()
@@ -53,6 +39,26 @@ def main():
     run_gold()
     print("")
     run_profiler()
+
+COMMANDS = {
+    "help": print_usage,
+    "all": run_pipeline,
+    "ingest": run_bronze,
+    "process": run_silver,
+    "load": run_gold
+}
+
+def main():
+    arg = None
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+    if arg is None:
+        print_usage()
+        sys.exit(1)
+    if arg not in COMMANDS:
+        print_usage()
+        sys.exit(1)
+    COMMANDS[arg]()
 
 if __name__ == "__main__":
     main()
