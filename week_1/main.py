@@ -23,7 +23,7 @@ def run_profiler():
     pass
 
 def print_usage():
-    print("Usage: uv run main.py [optional: task]")
+    print("Usage: uv run main.py [ingest|process|load|profile|all|help]")
     print("")
     print("task:")
     print("> help -- show this help page")
@@ -41,11 +41,11 @@ def run_pipeline():
     run_profiler()
 
 COMMANDS = {
-    "help": print_usage,
-    "all": run_pipeline,
     "ingest": run_bronze,
     "process": run_silver,
-    "load": run_gold
+    "load": run_gold,
+    "all": run_pipeline,
+    "help": print_usage
 }
 
 def main():
