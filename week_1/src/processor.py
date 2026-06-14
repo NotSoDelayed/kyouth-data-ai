@@ -53,10 +53,6 @@ def process_all_html(input_path: str, output_path: str):
             if desc_tag:
                 description = desc_tag.get_text(separator=" ", strip=True)
 
-            source_id = " ".join(source_id.split())
-            job_title = " ".join(job_title.split())
-            company = " ".join(company.split())
-            description = " ".join(description.split())
             if not source_id:
                 count_skipped += 1
                 logging.warning(f"⚠️ Missing source_id in: {file.name}")
