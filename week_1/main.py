@@ -47,14 +47,16 @@ def nuke():
         sys.exit(1)
 
 def print_usage():
-    print("Usage: uv run main.py [ingest|process|load|profile|all|help]")
+    print("Usage: uv run main.py [ingest|process|load|profile|all|help|nuke]")
     print("")
     print("task:")
     print("> help -- show this help page")
-    print("> all -- executes the whole pipeline")
-    print("> nuke -- nukes all generated files")
     print("> ingest -- ingest MHTML to HTML")
     print("> process -- process ETL on HTML to JSON")
+    print("> load -- loads processed JSON into DB")
+    print("> profile -- prints data quality report from the DB")
+    print("> all -- executes the whole pipeline")
+    print("> nuke -- nukes all generated files by the program")
 
 def run_pipeline():
     run_bronze()
