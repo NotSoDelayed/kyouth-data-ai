@@ -57,8 +57,7 @@ def query_shortest_desc(cursor: Cursor) -> Any:
     )
     return cursor.fetchone()
 
-def run_data_profile(db_path_str: str):
-    db_path = Path(db_path_str)
+def run_data_profile(db_path: Path):
     if not db_path.exists():
         print(f"❌ Database not found at {db_path}")
         sys.exit(1)

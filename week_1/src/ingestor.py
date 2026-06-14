@@ -27,18 +27,16 @@ def export_html(html: str, file_name: str, output_dir: Path):
     except OSError as err:
         logging.error(f"⚠️ Unable to export to {output_file.name} | Reason: {err}")
 
-def ingest_all_mhtml(input_path: str, output_path: str):
+def ingest_all_mhtml(input_path: Path, output_path: Path):
     print("🥉 Bronze: Ingesting HTML to MHTML")
-    input_dir = Path(input_path)
-    output_dir = Path(output_path)
-    if not (input_dir.exists() or input_dir.is_dir()):
-        print(f"Input directory '{input_dir.name}' not found.")
+    if not (input_path.exists() or input_path.is_dir()):
+        print(f"Input directory '{input_path.name}' not found.")
         sys.exit(1)
 
     count_total = 0
     count_fail = 0
     count_success = 0
-    for file_path in input_dir.glob("*.mhtml"):
+    for file_path in input_path.glob("*.mhtml"):
         count_total += 1
         try:
             with open(file_path, "rb") as file:
@@ -53,7 +51,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
             for part in raw.walk():
                 html = extract_html(file_path, part, True)
                 if html is not None:
-                    export_html(html, f"{file_path.stem}.html", output_dir)
+                    export_html(html, f"{file_path.stem}.html", output_path)
                     count_success += 1
                     break
             if html is None:
@@ -62,7 +60,7 @@ def ingest_all_mhtml(input_path: str, output_path: str):
         else:
             html = extract_html(file_path, raw)
             if html is not None:
-                export_html(html, f"{file_path.stem}.html", output_dir)
+                export_html(html, f"{file_path.stem}.html", output_path)
                 count_success += 1
             else:
                 count_fail += 1

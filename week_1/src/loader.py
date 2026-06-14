@@ -4,9 +4,8 @@ import sqlite3
 from pathlib import Path
 
 
-def load_all_jsons(input_dir: str, db_path_str: str):
+def load_all_jsons(input_path: Path, db_path: Path):
     print("🥇 Gold: Inserting JSON data into database")
-    db_path = Path(db_path_str)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(db_path) as db:
         cursor = db.cursor()
@@ -23,7 +22,6 @@ def load_all_jsons(input_dir: str, db_path_str: str):
         n_total = 0
         n_inserted = 0
         n_skipped = 0
-        input_path = Path(input_dir)
         for file_path in input_path.glob("*.json"):
             n_total += 1
             try:

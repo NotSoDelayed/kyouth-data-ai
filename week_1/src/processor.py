@@ -14,19 +14,17 @@ class JobListing(BaseModel):
     description: str
 
 
-def process_all_html(input_path: str, output_path: str):
+def process_all_html(input_path: Path, output_path: Path):
     print("🥈 Silver: Transforming HTML to JSON")
-    input_dir = Path(input_path)
-    output_dir = Path(output_path)
-    if not input_dir.exists() or not input_dir.is_dir():
-        print(f"Input directory '{input_dir}' not found.")
+    if not input_path.exists() or not input_path.is_dir():
+        print(f"Input directory '{input_path}' not found.")
         sys.exit(1)
 
     total = 0
     count_processed = 0
     count_skipped = 0
-    output_dir.mkdir(parents=True, exist_ok=True)
-    html_files = sorted([f for f in input_dir.iterdir() if f.suffix == ".html"])
+    output_path.mkdir(parents=True, exist_ok=True)
+    html_files = sorted([f for f in input_path.iterdir() if f.suffix == ".html"])
     for file in html_files:
         total += 1
         try:
@@ -77,7 +75,7 @@ def process_all_html(input_path: str, output_path: str):
                 description=description
             )
 
-            output_file = output_dir / (file.stem + ".json")
+            output_file = output_path / (file.stem + ".json")
             with open(output_file, "w", encoding="utf-8") as json_file:
                 json.dump(listing.model_dump(), json_file, indent=4, ensure_ascii=False)
             count_processed += 1
