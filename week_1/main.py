@@ -8,6 +8,7 @@ from src.loader import load_all_jsons
 from src.processor import process_all_html
 from src.profiler import run_data_profile
 
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s |%(levelname)s |%(message)s"
