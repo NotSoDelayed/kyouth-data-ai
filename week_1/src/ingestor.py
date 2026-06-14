@@ -3,8 +3,8 @@ import sys
 from email import policy
 from email.message import EmailMessage
 from email.parser import BytesParser
-from typing import cast
 from pathlib import Path
+from typing import cast
 
 
 def extract_html(file_path: Path, part: EmailMessage, suppress_err: bool = False) -> str | None:

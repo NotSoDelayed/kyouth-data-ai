@@ -1,7 +1,7 @@
-import sys
 import sqlite3
-from sqlite3 import Cursor
+import sys
 from pathlib import Path
+from sqlite3 import Cursor
 from typing import Any
 
 
