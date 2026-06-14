@@ -1,9 +1,10 @@
 import logging
 import sys
-from src.ingestor import ingest_all_mhtml
-from src.processor import process_all_html
-from src.loader import load_all_jsons
 
+from src.ingestor import ingest_all_mhtml
+from src.loader import load_all_jsons
+from src.processor import process_all_html
+from src.profiler import run_data_profile
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,7 +21,7 @@ def run_gold():
     load_all_jsons("data/2_bronze", "data/3_gold/jobs.db")
 
 def run_profiler():
-    pass
+    run_data_profile("data/3_gold/jobs.db")
 
 def print_usage():
     print("Usage: uv run main.py [ingest|process|load|profile|all|help]")
@@ -44,6 +45,7 @@ COMMANDS = {
     "ingest": run_bronze,
     "process": run_silver,
     "load": run_gold,
+    "profile": run_profiler,
     "all": run_pipeline,
     "help": print_usage
 }
