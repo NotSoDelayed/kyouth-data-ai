@@ -31,12 +31,27 @@ def run_gold():
 def run_profiler():
     run_data_profile(GOLD_DIR/DB_NAME)
 
+def nuke():
+    nuked = False
+    for path_str in SILVER_DIR, BRONZE_DIR, GOLD_DIR:
+        path = Path(path_str)
+        if not path.exists():
+            print(f"{path} doesn't exist. Skipping...")
+            continue
+        shutil.rmtree(path)
+        nuked = True
+        print(f"Nuked: {path}")
+    if not nuked:
+        print("Nothing was nuked.")
+        sys.exit(1)
+
 def print_usage():
     print("Usage: uv run main.py [ingest|process|load|profile|all|help]")
     print("")
     print("task:")
     print("> help -- show this help page")
     print("> all -- executes the whole pipeline")
+    print("> nuke -- nukes all generated files")
     print("> ingest -- ingest MHTML to HTML")
     print("> process -- process ETL on HTML to JSON")
 
@@ -55,6 +70,7 @@ COMMANDS = {
     "load": run_gold,
     "profile": run_profiler,
     "all": run_pipeline,
+    "nuke": nuke,
     "help": print_usage
 }
 
