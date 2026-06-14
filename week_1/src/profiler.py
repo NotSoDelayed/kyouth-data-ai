@@ -70,6 +70,7 @@ def run_data_profile(db_path: Path):
     desc_length_avg = query_desc_len_avg(cursor)
     desc_length_longest = query_longest_desc(cursor)
     desc_length_shortest = query_shortest_desc(cursor)
+
     db.close()
 
     print("--- 🔍 DATA QUALITY REPORT ---")
