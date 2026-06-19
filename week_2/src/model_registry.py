@@ -54,13 +54,13 @@ class AiModel:
 
 _MODELS: dict[str, AiModel] = {}
 
-def load_models(path: str):
+def load_models():
 	global _MODELS
 
 	if _MODELS:
 		return
 
-	file_path = Path(path)
+	file_path = Path("rate_limits.txt")
 	if not file_path.exists():
 		logging.error("Populate models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
 		sys.exit(1)
@@ -77,6 +77,8 @@ def load_models(path: str):
 				logging.warning(f"Skipping model '{line}': {err}")
 				continue
 			_MODELS[name] = model
+
+	# Hardcode for installed Ollama models
 	for name in "deepseek-r1", "llama3.1", "phi3":
 		_MODELS[name] = AiModel.parse(name, "-1 -1 -1")
 	if not _MODELS:
