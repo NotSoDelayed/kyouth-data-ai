@@ -86,5 +86,11 @@ def load_models():
 		sys.exit(1)
 	_INITIALIZED = True
 
+load_models()
+
 def models() -> dict[str, AiModel]:
 	return _MODELS
+
+if __name__ == "__main__":
+	for model in _MODELS.values():
+		print(model)

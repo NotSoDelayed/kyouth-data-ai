@@ -7,7 +7,7 @@ from google import genai
 from google.genai.types import GenerateContentResponse
 from ollama import ChatResponse, chat
 
-from model_registry import AiModelFamily, models, load_models
+from model_registry import AiModelFamily, models
 
 
 @dataclass
@@ -61,7 +61,6 @@ if __name__ == "__main__":
 	if len(sys.argv) != 3:
 		print("Usage: python prompt_model.py <model> <prompt>")
 		sys.exit(1)
-	load_models()
 	response = prompt_model(sys.argv[1], sys.argv[2])
 	if not response:
 		sys.exit(1)
