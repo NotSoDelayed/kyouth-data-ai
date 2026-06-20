@@ -2,7 +2,8 @@ import logging
 import re
 import sys
 from dataclasses import dataclass
-from enum import Enum
+from pathlib import Path
+
 
 def unscale(value: str) -> int:
 	match = re.fullmatch(r"(\d+(\.\d+)?)([KMB])?", value.strip().upper())
@@ -20,37 +21,24 @@ def unscale(value: str) -> int:
 	return int(float(number) * multipliers[suffix])
 
 
-class AiModelFamily(Enum):
-	OLLAMA = "ollama"
-	GEMINI = "gemini"
-
-
 @dataclass(frozen=True)
-class AiModel:
-	family: AiModelFamily
-	full_name: str
+class GeminiCloudModel:
 	tier: str
 	rpm: int
 	tpm: int
 	rpd: int
 
 	@classmethod
-	def parse(cls, name: str, ratelimits: str) -> AiModel:
-		if "-" in name:
-			family, tier = name.split("-", 1)
-		else:
-			match = re.match(r"^([a-zA-Z]+)(.*)$", name)
-			if not match:
-				raise ValueError(f"Invalid model name: {name}")
-			family, tier = match.groups()
-			tier = tier or ""
+	def parse(cls, name: str, ratelimits: str) -> GeminiCloudModel:
+		family, tier = name.split("-", 1)
 		rpm, tpm, rpd = ratelimits.split(" ", 2)
-		if family == "gemini":
-			return AiModel(AiModelFamily.GEMINI, name, tier, unscale(rpm), unscale(tpm), unscale(rpd))
-		return AiModel(AiModelFamily.OLLAMA, name, tier, int(rpm), int(tpm), int(rpd))
+		return GeminiCloudModel(tier, unscale(rpm), unscale(tpm), unscale(rpd))
+
+	def name(self):
+		return f"gemini-{self.tier}"
 
 
-_MODELS: dict[str, AiModel] = {}
+_MODELS: dict[str, GeminiCloudModel] = {}
 
 def load_models():
 	global _MODELS
@@ -58,7 +46,7 @@ def load_models():
 	if _MODELS:
 		return
 
-	file_path = root_dir().joinpath("rate_limits.txt")
+	file_path = Path("rate_limits.txt")
 	if not file_path.exists():
 		logging.error("Populate models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
 		sys.exit(1)
@@ -70,23 +58,15 @@ def load_models():
 				continue
 			try:
 				name, ratelimits = line.split(" ", 1)
-				model = AiModel.parse(name, ratelimits)
+				model = GeminiCloudModel.parse(name, ratelimits)
 			except ValueError as err:
 				logging.warning(f"Skipping model '{line}': {err}")
 				continue
 			_MODELS[name] = model
 
-	# Hardcode for installed Ollama models
-	for name in "deepseek-r1", "llama3.1", "phi3":
-		_MODELS[name] = AiModel.parse(name, "-1 -1 -1")
-	if not _MODELS:
-		logging.warning("No valid model exist. Exiting...")
-		sys.exit(1)
-	_INITIALIZED = True
-
 load_models()
 
-def models() -> dict[str, AiModel]:
+def models() -> dict[str, GeminiCloudModel]:
 	return _MODELS
 
 if __name__ == "__main__":

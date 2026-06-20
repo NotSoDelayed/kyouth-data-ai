@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai.errors import APIError
 from google.genai.types import GenerateContentResponse
-from ollama import ChatResponse, chat
+from ollama import ChatResponse, chat, ResponseError
 
 from model_registry import AiModelFamily, models
 
@@ -56,19 +57,16 @@ def prompt_model(model_name: str, prompt: str) -> PromptResponse | None:
 	return PromptResponse.create(res)
 
 if __name__ == "__main__":
-
-	res = chat(model="hahaah", messages=[
-		{
-			'role': 'user',
-			'content': "prompt"
-		}
-	])
-	print(res.message.content)
-	sys.exit()
 	if len(sys.argv) != 3:
 		print("Usage: python prompt_model.py <model> <prompt>")
 		sys.exit(1)
-	response = prompt_model(sys.argv[1], sys.argv[2])
+	response = None
+	try:
+		response = prompt_model(sys.argv[1], sys.argv[2])
+	except APIError as err:
+		print(f"[Gemini Error] {err.message}")
+	except ResponseError as err:
+		print(f"[Ollama Error] {err.error}")
 	if not response:
 		sys.exit(1)
 	print("\n--- RESPONSE ---\n")
