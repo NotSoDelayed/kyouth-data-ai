@@ -1,8 +1,15 @@
 import logging
+import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai.types import Content, ContentDict
+
+from prompt_model import PromptResponse
 
 
 def unscale(value: str) -> int:
@@ -34,6 +41,16 @@ class GeminiCloudModel:
 		rpm, tpm, rpd = ratelimits.split(" ", 2)
 		return GeminiCloudModel(tier, unscale(rpm), unscale(tpm), unscale(rpd))
 
+	def prompt(self, content: Content | ContentDict | str, ) -> PromptResponse:
+		load_dotenv()
+		gemini_api_key = os.getenv("API_KEY")
+		if not gemini_api_key:
+			print("'API_KEY' in .env does not exist.")
+			return None
+		client = genai.Client(api_key=gemini_api_key)
+		res = client.models.generate_content(model=self.name(), contents=content)
+		return PromptResponse.create(res)
+
 	def name(self):
 		return f"gemini-{self.tier}"
 
@@ -48,7 +65,7 @@ def load_models():
 
 	file_path = Path("rate_limits.txt")
 	if not file_path.exists():
-		logging.error("Populate models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
+		logging.error("Populate gemini models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
 		sys.exit(1)
 
 	with open(file_path, "r", encoding="utf-8") as file:
@@ -64,11 +81,10 @@ def load_models():
 				continue
 			_MODELS[name] = model
 
-load_models()
-
 def models() -> dict[str, GeminiCloudModel]:
 	return _MODELS
 
 if __name__ == "__main__":
+	load_models()
 	for model in _MODELS.values():
 		print(model)

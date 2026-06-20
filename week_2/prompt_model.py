@@ -1,14 +1,12 @@
-import os
 import sys
 from dataclasses import dataclass
 
-from dotenv import load_dotenv
-from google import genai
+import ollama
 from google.genai.errors import APIError
 from google.genai.types import GenerateContentResponse
-from ollama import ChatResponse, chat, ResponseError
+from ollama import ChatResponse, ResponseError
 
-from model_registry import AiModelFamily, models
+import model_registry
 
 
 @dataclass
@@ -17,49 +15,38 @@ class PromptResponse:
 	tokens: int = 0
 
 	@staticmethod
-	def create(res: ChatResponse | GenerateContentResponse | str) -> PromptResponse:
-		tokens = 0
+	def create(res: ChatResponse | GenerateContentResponse) -> PromptResponse:
+
 		# Ollama
 		if isinstance(res, ChatResponse):
 			context = res.message.content or "No context available"
-			tokens = res.get('eval_count') or tokens
+			tokens = res.get('eval_count') or 0
 		# Gemini
 		else:
 			context = res.text or "No context available"
-			tokens = res.usage_metadata.candidates_token_count or tokens
+			tokens = res.usage_metadata.candidates_token_count or 0
 
 		return PromptResponse(context, tokens)
 
 
-def prompt_model(model_name: str, prompt: str) -> PromptResponse | None:
-	ai_model = models().get(model_name)
-	if not ai_model:
-		print(f"Model '{model_name}' does not exist.")
-		return None
-	if ai_model.family is AiModelFamily.GEMINI:
-		load_dotenv()
-		gemini_api_key = os.getenv("API_KEY")
-		if not gemini_api_key:
-			print("'API_KEY' in .env does not exist.")
+def prompt_model(model_name: str, content: str) -> PromptResponse | None:
+	# Lazy-check on whether the input is a gemini model
+	if model_name.startswith("gemini"):
+		model_registry.load_models()
+		ai_model = model_registry.models().get(model_name)
+		if not ai_model:
+			print(f"Model '{model_name}' does not exist.")
 			return None
-		client = genai.Client(api_key=gemini_api_key)
-		res = client.models.generate_content(
-			model=ai_model.full_name,
-			contents=prompt
-		)
-		return PromptResponse.create(res)
-	res = chat(model=ai_model.full_name, messages=[
-		{
-			'role': 'user',
-			'content': prompt
-		}
-	])
+		return ai_model.prompt(content)
+	
+	res = ollama.chat(model=model_name, messages=[{"role": "user", "content": content}])
 	return PromptResponse.create(res)
 
 if __name__ == "__main__":
 	if len(sys.argv) != 3:
 		print("Usage: python prompt_model.py <model> <prompt>")
 		sys.exit(1)
+
 	response = None
 	try:
 		response = prompt_model(sys.argv[1], sys.argv[2])
@@ -69,5 +56,6 @@ if __name__ == "__main__":
 		print(f"[Ollama Error] {err.error}")
 	if not response:
 		sys.exit(1)
+
 	print("\n--- RESPONSE ---\n")
 	print(response.context)
