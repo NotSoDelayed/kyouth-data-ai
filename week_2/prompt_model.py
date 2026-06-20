@@ -22,7 +22,6 @@ class PromptResponse:
 		if isinstance(res, ChatResponse):
 			context = res.message.content or "No context available"
 			tokens = res.get('eval_count') or tokens
-			success = res.done
 		# Gemini
 		else:
 			context = res.text or "No context available"
@@ -42,7 +41,6 @@ def prompt_model(model_name: str, prompt: str) -> PromptResponse | None:
 		if not gemini_api_key:
 			print("'API_KEY' in .env does not exist.")
 			return None
-		success = True
 		client = genai.Client(api_key=gemini_api_key)
 		res = client.models.generate_content(
 			model=ai_model.full_name,
@@ -58,6 +56,15 @@ def prompt_model(model_name: str, prompt: str) -> PromptResponse | None:
 	return PromptResponse.create(res)
 
 if __name__ == "__main__":
+
+	res = chat(model="hahaah", messages=[
+		{
+			'role': 'user',
+			'content': "prompt"
+		}
+	])
+	print(res.message.content)
+	sys.exit()
 	if len(sys.argv) != 3:
 		print("Usage: python prompt_model.py <model> <prompt>")
 		sys.exit(1)

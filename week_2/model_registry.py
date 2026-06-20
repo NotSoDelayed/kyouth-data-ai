@@ -3,8 +3,6 @@ import re
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-
 
 def unscale(value: str) -> int:
 	match = re.fullmatch(r"(\d+(\.\d+)?)([KMB])?", value.strip().upper())
@@ -60,7 +58,7 @@ def load_models():
 	if _MODELS:
 		return
 
-	file_path = Path("rate_limits.txt")
+	file_path = root_dir().joinpath("rate_limits.txt")
 	if not file_path.exists():
 		logging.error("Populate models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
 		sys.exit(1)
