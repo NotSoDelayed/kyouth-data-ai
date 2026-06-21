@@ -50,7 +50,7 @@ def process_all_html(input_path: Path, output_path: Path):
             desc_tag = soup.find(attrs={"data-automation": "jobAdDetails"})
             if desc_tag:
                 description = desc_tag.get_text(separator=" ", strip=True)
-
+                description = "\n".join(description.split("\n"))
             if not source_id:
                 count_skipped += 1
                 logging.warning(f"⚠️ Missing source_id in: {file.name}")
