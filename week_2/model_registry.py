@@ -1,61 +1,10 @@
 import logging
-import os
-import re
-import sys
-from dataclasses import dataclass
 from pathlib import Path
 
-from dotenv import load_dotenv
-from google import genai
-from google.genai.types import Content, ContentDict
-
-from prompt_model import PromptResponse
+from ai_model import AiModel, OllamaModel, GeminiCloudModel
 
 
-def unscale(value: str) -> int:
-	match = re.fullmatch(r"(\d+(\.\d+)?)([KMB])?", value.strip().upper())
-
-	if not match:
-		raise ValueError(f"Invalid number format: {value}")
-
-	number, _, suffix = match.groups()
-	multipliers = {
-		None: 1,
-		"K": 1000,
-		"M": 1000000,
-		"B": 1000000000,
-	}
-	return int(float(number) * multipliers[suffix])
-
-
-@dataclass(frozen=True)
-class GeminiCloudModel:
-	tier: str
-	rpm: int
-	tpm: int
-	rpd: int
-
-	@classmethod
-	def parse(cls, name: str, ratelimits: str) -> GeminiCloudModel:
-		family, tier = name.split("-", 1)
-		rpm, tpm, rpd = ratelimits.split(" ", 2)
-		return GeminiCloudModel(tier, unscale(rpm), unscale(tpm), unscale(rpd))
-
-	def prompt(self, content: Content | ContentDict | str, ) -> PromptResponse:
-		load_dotenv()
-		gemini_api_key = os.getenv("API_KEY")
-		if not gemini_api_key:
-			print("'API_KEY' in .env does not exist.")
-			return None
-		client = genai.Client(api_key=gemini_api_key)
-		res = client.models.generate_content(model=self.name(), contents=content)
-		return PromptResponse.create(res)
-
-	def name(self):
-		return f"gemini-{self.tier}"
-
-
-_MODELS: dict[str, GeminiCloudModel] = {}
+_MODELS: dict[str, AiModel] = {}
 
 def load_models():
 	global _MODELS
@@ -63,10 +12,14 @@ def load_models():
 	if _MODELS:
 		return
 
+	# Load supported Ollama models
+	for name in "deepseek-r1:1.5b", "llama3.1", "phi3":
+		_MODELS[name] = OllamaModel(name, -1, -1 ,-1)
+
+	# Load Gemini cloud models from file
 	file_path = Path("rate_limits.txt")
 	if not file_path.exists():
-		logging.error("Populate gemini models with format 'full_model RPM TPM RPD' model per line into 'rate_limits.txt'!")
-		sys.exit(1)
+		print(f"{file_path} doesn't exist. Skipping...")
 
 	with open(file_path, "r", encoding="utf-8") as file:
 		for line in file:
@@ -81,7 +34,7 @@ def load_models():
 				continue
 			_MODELS[name] = model
 
-def models() -> dict[str, GeminiCloudModel]:
+def models() -> dict[str, AiModel]:
 	return _MODELS
 
 if __name__ == "__main__":
