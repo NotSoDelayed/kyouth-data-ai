@@ -43,7 +43,7 @@ def tag_data(db_url: str, model: AiModel):
 
 			for row in rows:
 				res = prompt_tech_stack(model, row["description"])
-				tech_stack = res.context
+				tech_stack = res.context.strip(" .")
 				print(f"Analysed Job {row["source_id"]}: {tech_stack}")
 				updates.append((tech_stack, row["source_id"]))
 
@@ -89,7 +89,7 @@ Invalid items:
 "familiarity with cloud-native architectures"
 
 Your final response is strictly a single line, comma-separated list of ALL techstack items identified from the job description (without quotes) as such:
-"Java, Spring Framework/Spring Boot, Python, PyTorch, TensorFlow, scikit-learn, Git, code reviews, testing, CI/CD"
+"Java, Spring Framework/Spring Boot, Python, PyTorch, TensorFlow, scikit-learn, Git, code reviews, testing, CI/CD, ..."
 
 Return "None" (without quotes) if not enough information for identification is available.
 
