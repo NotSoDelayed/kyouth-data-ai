@@ -37,7 +37,8 @@ def load_models():
 def models() -> dict[str, AiModel]:
 	return _MODELS
 
+load_models()
+
 if __name__ == "__main__":
-	load_models()
 	for model in _MODELS.values():
 		print(model)
