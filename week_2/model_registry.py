@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 from ai_model import AiModel, OllamaModel, GeminiCloudModel
@@ -29,7 +28,7 @@ def load_models():
 				name, ratelimits = line.split(" ", 1)
 				model = GeminiCloudModel.parse(name, ratelimits)
 			except ValueError as err:
-				logging.warning(f"Skipping model '{line}': {err}")
+				print(f"Skipping model '{line}': {err}")
 				continue
 			_MODELS[name] = model
 
