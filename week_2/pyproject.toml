@@ -9,4 +9,5 @@ dependencies = [
     "google-genai>=2.9.0",
     "ollama>=0.6.2",
     "pydantic>=2.13.4",
+    "ruff>=0.15.18",
 ]
