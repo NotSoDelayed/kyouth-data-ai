@@ -1,8 +1,5 @@
 import sys
 
-from google.genai.errors import APIError
-from ollama import ResponseError
-
 import model_registry
 from ai_model import PromptResponse
 

@@ -3,7 +3,6 @@ from pathlib import Path
 
 from ai_model import AiModel, OllamaModel, GeminiCloudModel
 
-
 _MODELS: dict[str, AiModel] = {}
 
 def load_models():
