@@ -20,13 +20,7 @@ if __name__ == "__main__":
 		print("Usage: python prompt_model.py <model> <prompt>")
 		sys.exit(1)
 
-	response = None
-	try:
-		response = prompt_model(sys.argv[1], sys.argv[2])
-	except APIError as err:
-		print(f"[Gemini Error] {err.message}")
-	except ResponseError as err:
-		print(f"[Ollama Error] {err.error}")
+	response = prompt_model(sys.argv[1], sys.argv[2])
 	if not response:
 		sys.exit(1)
 
