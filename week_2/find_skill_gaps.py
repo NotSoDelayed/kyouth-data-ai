@@ -13,6 +13,9 @@ class SkillGapResult(BaseModel):
 
 def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
 	input_path = Path(input_file_path)
+	if not input_path.exists():
+		print(f"Resume '{input_path.name}' not found.")
+		sys.exit(1)
 	skills = parse_resume(input_path)
 	tech_stack = tech_stack_from_db(db_url)
 	gaps = sorted(tech_stack - skills)
@@ -20,7 +23,7 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
 
 
 def parse_resume(resume_path) -> set[str]:
-	res = prompt_model("llama3.1",
+	res = prompt_model("gemini-3.1-flash-lite",
 f"""Identify ALL of the tech stack items explicitly stated in the given resume.
 Each item must be 4 words maximum
 Use short noun phrases (i.e. azure, php, gcp, google cloud, ....).
@@ -76,4 +79,4 @@ def tech_stack_from_db(db_url: str):
 
 
 if __name__ == "__main__":
-	print(find_skill_gaps("data/resume_d3.txt", "data/jobs.db"))
+	print(find_skill_gaps("data/resume_d3_eval.txt", "data/jobs_d3_eval.db"))
