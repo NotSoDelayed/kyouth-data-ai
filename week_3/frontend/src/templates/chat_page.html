@@ -153,22 +153,30 @@
 	}
 
 	/**
-	 * Processes user input and triggers the simulated bot response.
-	 */
-	function handleSend() {
-		const text = inputField.value.trim();
-		if (!text) return; // Halt execution if input is empty
+     * Processes user input and triggers the simulated bot response.
+     */
+    async function handleSend() {
+        const text = inputField.value.trim();
+        if (!text) return; // Halt execution if input is empty
 
-		// Register user message
-		appendMessage(text, 'user');
-		inputField.value = '';
+        // Register user message
+        appendMessage(text, 'user');
+        inputField.value = '';
 
-		// Simulated asynchronous bot response loop
-		setTimeout(() => {
-			const responseText = "Acknowledged: You stated '" + text + "'. I am a localized interface with no external backend connection.";
-			appendMessage(responseText, 'bot');
-		}, 0);
-	}
+        const res = await fetch("http://localhost:8001/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                reply: text
+            })
+        })
+        if (!res.ok)
+            appendMessage("[Error] Something went wrong.", 'bot')
+        const data = await res.json();
+        appendMessage(data.reply, 'bot');
+    }
 
 	// Event Listeners for trigger conditions
 	sendButton.addEventListener('click', handleSend);
