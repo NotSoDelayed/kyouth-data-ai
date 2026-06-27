@@ -55,6 +55,9 @@ class OllamaModel(AiModel):
 		except ResponseError as err:
 			print(f"[Ollama Error] {err.error}")
 			return None
+		except Exception as err:
+			print(f"[Ollama Error] {err}")
+			return None
 		return PromptResponse.create(res)
 
 class GeminiCloudModel(AiModel):
@@ -74,6 +77,9 @@ class GeminiCloudModel(AiModel):
 			res = client.models.generate_content(model=self.name, contents=content)
 		except APIError as err:
 			print(f"[Gemini Error] {err.message}")
+			return None
+		except Exception as err:
+			print(f"[Gemini Error] {err}")
 			return None
 		return PromptResponse.create(res)
 
