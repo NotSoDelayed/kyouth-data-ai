@@ -3,7 +3,7 @@ FROM python:3.14.4-bookworm
 WORKDIR /app
 
 COPY src ./src
-COPY pyproject.toml uv.lock .env ./
+COPY pyproject.toml uv.lock ./
 
 RUN pip install uv
 RUN uv sync
