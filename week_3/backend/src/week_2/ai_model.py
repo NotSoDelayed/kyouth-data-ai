@@ -49,9 +49,12 @@ class AiModel(ABC):
 class OllamaModel(AiModel):
 	def prompt(self, content: Any) -> PromptResponse | None:
 		try:
-			res = ollama.chat(model=self.name, messages=[
-				{"role": "user", "content": content}
-			])
+			if isinstance(content, str):
+				res = ollama.chat(model=self.name, messages=[
+					{"role": "user", "content": content}
+				])
+			else:
+				res = ollama.chat(model=self.name, messages=content)
 		except ResponseError as err:
 			print(f"[Ollama Error] {err.error}")
 			return None

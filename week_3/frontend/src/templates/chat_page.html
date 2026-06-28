@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Helper Chatbot</title>
     <style>
+        :root {
+            --primary-color: #1f3357;
+            --accent-color: #3e4b6d;
+            --white: #d4d4d4;
+            --text: #191919
+        }
         /* CSS: Structural and Presentational Rules */
 		body {
 			font-family: system-ui, sans-serif;
@@ -13,29 +19,29 @@
 			align-items: center;
 			height: 100vh;
 			margin: 0;
-			background-color: #f4f4f9;
+			background-color: #4f5357;
 		}
 
 		.chat-container {
-            width: 50vw;
+            width: 60vw;
 			min-width: 380px;
 			height: 600px;
 			display: flex;
 			flex-direction: column;
-			background: #ffffff;
+			background: var(--accent-color);
 			border-radius: 12px;
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 			overflow: hidden;
 		}
 
 		.chat-header {
-			background: #2563eb;
-			color: #ffffff;
+			background: var(--primary-color);
+			color: var(--white);
 			padding: 16px;
 			text-align: center;
 			font-weight: 600;
 			font-size: 1.1rem;
-			border-bottom: 1px solid #1d4ed8;
+			border-bottom: 1px solid var(--primary-color);
 		}
 
 		.chat-messages {
@@ -58,29 +64,30 @@
 
 		.user-message {
 			align-self: flex-end;
-			background: #2563eb;
-			color: #ffffff;
+			background: var(--white);
+			color: var(--text);
 			border-bottom-right-radius: 4px;
 		}
 
 		.bot-message {
 			align-self: flex-start;
-			background: #f1f5f9;
-			color: #1e293b;
+			background: var(--white);
+			color: var(--text);
 			border-bottom-left-radius: 4px;
 		}
 
 		.chat-input-container {
 			display: flex;
 			padding: 16px;
-			border-top: 1px solid #e2e8f0;
-			background: #ffffff;
+			border-top: var(--primary-color);
+			background: var(--primary-color);
 		}
 
 		.chat-input {
 			flex: 1;
 			padding: 12px;
-			border: 1px solid #cbd5e1;
+            background: var(--white);
+			border: 1px solid var(--white);
 			border-radius: 8px;
 			outline: none;
 			font-size: 0.95rem;
@@ -88,39 +95,49 @@
 		}
 
 		.chat-input:focus {
-			border-color: #2563eb;
+			border-color: var(--primary-color);
 		}
 
 		.send-btn {
 			margin-left: 12px;
 			padding: 0 20px;
-			background: #2563eb;
-			color: #ffffff;
+			background: #afafaf;
+			color: var(--text);
 			border: none;
 			border-radius: 8px;
 			font-weight: 600;
 			cursor: pointer;
-			transition: background 0.2s;
 		}
 
 		.send-btn:hover {
-			background: #1d4ed8;
+			filter: brightness(0.9);
 		}
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
-        Resume Chatbot
+        Resume Helper Chatbot
     </div>
 
     <div class="chat-messages" id="chat-messages">
-        <div class="message bot-message">Let's get started!</div>
+        <div class="message bot-message">Start by uploading a resume in PDF.</div>
     </div>
 
     <div class="chat-input-container">
         <input type="text" id="chat-input" class="chat-input" placeholder="Ask anything..." autocomplete="off">
+        <input type="file" id="file-input" accept="*.pdf, application/pdf" style="display: none;">
+        <button id="upload-trigger-btn" class="send-btn" style="background: #64748b;">📎</button>
+
+        <div id="file-status-container" style="display: none; color: #16a34a; font-size: 0.9rem; padding: 12px 16px;">
+            File: <span id="file-name-display"></span>
+        </div>
         <button id="send-btn" class="send-btn">Send</button>
     </div>
 </div>
@@ -130,7 +147,6 @@
 
 
 <script>
-	// JavaScript: Behavioral Logic and DOM Manipulation
 	const messagesContainer = document.getElementById('chat-messages');
 	const inputField = document.getElementById('chat-input');
 	const sendButton = document.getElementById('send-btn');
@@ -138,52 +154,99 @@
 	/**
 	 * Appends a message element to the chat container.
 	 * @param {string} text - The message content.
-	 * @param {string} sender - The entity sending the message ('user' or 'bot').
+	 * @param {string} sender - The entity sending the message ('user' or 'bot')
 	 */
 	function appendMessage(text, sender) {
 		const messageDiv = document.createElement('div');
 		messageDiv.classList.add('message');
 		messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
 		messageDiv.textContent = text;
-
 		messagesContainer.appendChild(messageDiv);
-
-		// Force scroll to the bottom to track new messages
 		messagesContainer.scrollTop = messagesContainer.scrollHeight;
 	}
+
+    const fileInput = document.getElementById('file-input');
+    const uploadTriggerBtn = document.getElementById('upload-trigger-btn');
+    const fileStatusContainer = document.getElementById('file-status-container');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    uploadTriggerBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                fileInput.value = '';
+                fileStatusContainer.style.color = '#dc2626';
+                fileNameDisplay.textContent = "Invalid format. Please select a .txt file.";
+                fileStatusContainer.style.display = 'block';
+                return;
+            }
+            fileStatusContainer.style.color = '#16a34a';
+            fileNameDisplay.textContent = file.name;
+            fileStatusContainer.style.display = 'block';
+        } else {
+            fileStatusContainer.style.display = 'none';
+        }
+    });
 
 	/**
      * Processes user input and triggers the simulated bot response.
      */
     async function handleSend() {
         const text = inputField.value.trim();
-        if (!text) return; // Halt execution if input is empty
+        if (!text && fileInput.files.length === 0) return;
 
-        // Register user message
-        appendMessage(text, 'user');
+        if (fileInput.files.length > 0)
+            appendMessage(`[file ${fileInput.files[0].name}]`, 'user')
+        if (text)
+            appendMessage(text, 'user')
+
         inputField.value = '';
+        sendButton.disabled = true;
+        inputField.disabled = true;
 
-        const res = await fetch("http://localhost:8001/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                reply: text
-            })
-        })
-        if (!res.ok)
-            appendMessage("[Error] Something went wrong.", 'bot')
-        const data = await res.json();
-        appendMessage(data.reply, 'bot');
+        const loadingNode = document.createElement('div');
+        loadingNode.classList.add('message', 'bot-message');
+        loadingNode.textContent = "Loading...";
+        messagesContainer.appendChild(loadingNode);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        try {
+            const formData = new FormData();
+
+            if (text)
+                formData.append('context', text);
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            const res = await fetch("http://localhost:8001/chat", {
+                method: "POST",
+                body: formData
+            });
+            if (!res.ok)
+                appendMessage("[Error] Unknown error occurred.", 'bot');
+            else {
+                const data = await res.json();
+                appendMessage(data.reply, 'bot')
+            }
+        } catch (error) {
+            appendMessage(`[Error] ${error}`, 'bot');
+        } finally {
+            loadingNode.remove();
+            fileInput.value = '';
+            fileStatusContainer.style.display = 'none';
+            sendButton.disabled = false;
+            inputField.disabled = false;
+            inputField.focus();
+        }
     }
 
-	// Event Listeners for trigger conditions
 	sendButton.addEventListener('click', handleSend);
 
 	inputField.addEventListener('keypress', (event) => {
 		if (event.key === 'Enter') {
-			event.preventDefault(); // Prevent default form submission behavior if wrapped in a form
+			event.preventDefault();
 			handleSend();
 		}
 	});

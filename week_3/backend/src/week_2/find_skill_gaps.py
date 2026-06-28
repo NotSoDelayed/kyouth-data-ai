@@ -4,36 +4,15 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from src.week_2.prompt_model import prompt_model
-from src.week_2.ai_model import GeminiCloudModel
-from src.week_2.model_registry import models
+from src.week_2.model_registry import week3_model
 
 
 class SkillGapResult(BaseModel):
 	gaps: list[str]
 
 
-def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
-	input_path = Path(input_file_path)
-	skills = parse_resume(input_path)
-	tech_stack = tech_stack_from_db(db_url)
-	gaps = sorted(tech_stack - skills)
-	return SkillGapResult(gaps=gaps)
-
-
-def parse_resume(resume_path: Path) -> set[str]:
-	skill_set = set()
-	if not resume_path.exists():
-		return skill_set
-
-	for model in models().values():
-		if isinstance(model, GeminiCloudModel):
-			continue
-		if model.name == "phi3":
-			continue
-
-		res = prompt_model("llama3.1",
-	f"""Identify ALL of the tech stack items explicitly stated in the given resume.
+LLM_RESUME_PROMPT = """
+	Identify ALL of the tech stack items explicitly stated in the given resume.
 	Each item must be 4 words maximum
 	Use short noun phrases (i.e. azure, php, gcp, google cloud, ....).
 	Ensure all tech related skills are accounted for
@@ -42,15 +21,34 @@ def parse_resume(resume_path: Path) -> set[str]:
 	
 	Your final response is strictly a single line, comma-separated list of ALL techstack items identified from the given resume (without quotes) as such:
 	"alibaba cloud, api integration or web automation, aws, aws deployment and maintenance, azure, c++, cloud logs, datastudio, excel, gcp, github actions, google cloud, grafana, linux development environments, mongodb, mysql, nginx, node.js, oracle, php, postgresql, power bi, powerbi, prometheus, restful api design and development, spring boot, spring framework, sql server, version control"
-	Resume: ```{resume_path.read_text(encoding="utf-8")}```
-	""")
-		if not res:
-			return skill_set
-		skills = res.context.split(', ')
-		for skill in skills:
-			cleaned = skill.strip(". ").lower()
-			if cleaned:
-				skill_set.add(cleaned)
+
+	Resume:
+"""
+
+
+def find_skill_gaps(resume_data: str, db_url: str) -> SkillGapResult:
+	skills = parse_resume(resume_data)
+	tech_stack = tech_stack_from_db(db_url)
+	gaps = sorted(tech_stack - skills)
+	return SkillGapResult(gaps=gaps)
+
+def parse_resume(resume_data: str) -> set[str]:
+	skill_set = set()
+
+	res = week3_model().prompt(
+		f"""
+		{LLM_RESUME_PROMPT}
+		```
+		{resume_data}
+		```
+		""")
+	if not res:
+		return skill_set
+	skills = res.context.split(', ')
+	for skill in skills:
+		cleaned = skill.strip(". ").lower()
+		if cleaned:
+			skill_set.add(cleaned)
 	return skill_set
 
 def tech_stack_from_db(db_url: str):
@@ -85,5 +83,5 @@ def tech_stack_from_db(db_url: str):
 	return tech_stack
 
 
-if __name__ == "__main__":
-	print(find_skill_gaps("data/resume_d3.txt", "data/jobs.db"))
+# if __name__ == "__main__":
+# 	print(find_skill_gaps("data/resume_d3.txt", "data/jobs.db"))
